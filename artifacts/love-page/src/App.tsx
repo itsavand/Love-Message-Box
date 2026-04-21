@@ -121,21 +121,11 @@ function CelebrationPopup({ onClose }: { onClose: () => void }) {
             fontSize: "26px",
             fontWeight: "bold",
             color: "#c9184a",
-            marginBottom: "10px",
-          }}
-        >
-          Maan gaya / gayi! ❤️
-        </h2>
-        <p
-          style={{
-            fontSize: "16px",
-            color: "#888",
             marginBottom: "28px",
-            lineHeight: 1.6,
           }}
         >
-          Mujhe pata tha tujhe meri zaroorat hai! 😏💕
-        </p>
+          Ne as zanm bas toya znxe o dene o pise
+        </h2>
         <button
           onClick={onClose}
           style={{
