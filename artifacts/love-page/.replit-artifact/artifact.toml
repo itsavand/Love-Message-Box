@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Tu Hash Mn Dkay"
+version = "1.0.0"
+id = "artifacts/love-page"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22420
+
+[services.development]
+run = "pnpm --filter @workspace/love-page run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/love-page", "run", "build" ]
+publicDir = "artifacts/love-page/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22420"
+BASE_PATH = "/"
