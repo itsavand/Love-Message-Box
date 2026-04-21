@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import squirrelImg from "@assets/dbe1de91a004e543776d16eea62eea68_1776791715145.jpg";
 
 interface Particle {
   id: number;
@@ -209,9 +210,18 @@ function App() {
           width: "100%",
         }}
       >
-        <div style={{ fontSize: "90px", marginBottom: "8px", lineHeight: 1 }}>
-          🐱‍👤
-        </div>
+        <img
+          src={squirrelImg}
+          alt="cute squirrels in love"
+          style={{
+            width: "220px",
+            height: "160px",
+            objectFit: "cover",
+            borderRadius: "16px",
+            marginBottom: "12px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+          }}
+        />
 
         <div style={{ fontSize: "26px", marginBottom: "20px" }}>
           🙈😅
