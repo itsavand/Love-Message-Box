@@ -1,9 +1,174 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  size: number;
+  rotation: number;
+  rotationSpeed: number;
+}
+
+function Confetti({ active }: { active: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const animRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!active) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ["#ff4d6d", "#ff8e53", "#ffcc70", "#ff6b9d", "#c9184a", "#fff"];
+    particlesRef.current = Array.from({ length: 120 }, (_, i) => ({
+      id: i,
+      x: Math.random() * canvas.width,
+      y: -20,
+      vx: (Math.random() - 0.5) * 4,
+      vy: Math.random() * 4 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 10 + 5,
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 6,
+    }));
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesRef.current.forEach((p) => {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.5);
+        ctx.restore();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.rotationSpeed;
+        p.vy += 0.05;
+      });
+      particlesRef.current = particlesRef.current.filter((p) => p.y < canvas.height + 30);
+      if (particlesRef.current.length > 0) {
+        animRef.current = requestAnimationFrame(draw);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
+
+    animRef.current = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [active]);
+
+  if (!active) return null;
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        pointerEvents: "none",
+        zIndex: 9999,
+      }}
+    />
+  );
+}
+
+function CelebrationPopup({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+        backdropFilter: "blur(4px)",
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "linear-gradient(135deg, #fff0f5, #fff8f0)",
+          borderRadius: "30px",
+          padding: "50px 40px",
+          textAlign: "center",
+          boxShadow: "0 30px 80px rgba(255, 77, 109, 0.4)",
+          maxWidth: "380px",
+          width: "90%",
+          animation: "popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
+      >
+        <div style={{ fontSize: "70px", marginBottom: "10px", lineHeight: 1 }}>
+          💍
+        </div>
+        <div style={{ fontSize: "36px", marginBottom: "12px" }}>
+          🎉 Yaaaay! 🎉
+        </div>
+        <h2
+          style={{
+            fontSize: "26px",
+            fontWeight: "bold",
+            color: "#c9184a",
+            marginBottom: "10px",
+          }}
+        >
+          Maan gaya / gayi! ❤️
+        </h2>
+        <p
+          style={{
+            fontSize: "16px",
+            color: "#888",
+            marginBottom: "28px",
+            lineHeight: 1.6,
+          }}
+        >
+          Mujhe pata tha tujhe meri zaroorat hai! 😏💕
+        </p>
+        <button
+          onClick={onClose}
+          style={{
+            padding: "12px 32px",
+            fontSize: "16px",
+            fontWeight: "bold",
+            background: "linear-gradient(135deg, #ff4d6d, #c9184a)",
+            color: "white",
+            border: "none",
+            borderRadius: "50px",
+            cursor: "pointer",
+            boxShadow: "0 6px 20px rgba(255, 77, 109, 0.4)",
+          }}
+        >
+          Awww 🥰
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes popIn {
+          from { transform: scale(0.5); opacity: 0; }
+          to   { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 function App() {
   const [naxerClicks, setNaxerClicks] = useState(0);
   const [naxerGone, setNaxerGone] = useState(false);
-  const [showHeart, setShowHeart] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
 
   const MAX_CLICKS = 6;
 
@@ -11,10 +176,15 @@ function App() {
     const next = naxerClicks + 1;
     if (next >= MAX_CLICKS) {
       setNaxerGone(true);
-      setShowHeart(true);
     } else {
       setNaxerClicks(next);
     }
+  };
+
+  const handleBale = () => {
+    setShowPopup(true);
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 4000);
   };
 
   const baleScale = Math.pow(2, naxerClicks);
@@ -33,6 +203,10 @@ function App() {
         overflow: "hidden",
       }}
     >
+      <Confetti active={confettiActive} />
+
+      {showPopup && <CelebrationPopup onClose={() => setShowPopup(false)} />}
+
       <div
         style={{
           background: "rgba(255, 255, 255, 0.15)",
@@ -46,28 +220,12 @@ function App() {
         }}
       >
         <div style={{ fontSize: "100px", marginBottom: "10px", lineHeight: 1 }}>
-          {showHeart ? "💍" : "🐱‍👤"}
+          🐱‍👤
         </div>
 
-        <div style={{ fontSize: "28px", marginBottom: "5px" }}>
-          {showHeart ? "😍🌹" : "🙈😅"}
+        <div style={{ fontSize: "28px", marginBottom: "16px" }}>
+          🙈😅
         </div>
-
-        {!showHeart && (
-          <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.8)", marginBottom: "8px" }}>
-            {naxerClicks === 0
-              ? "Yaar seriously agar na kaha toh..."
-              : naxerClicks === 1
-              ? "Teri galti hai yeh 🤦"
-              : naxerClicks === 2
-              ? "Ab tu khud apni problem hai 😤"
-              : naxerClicks === 3
-              ? "Bhai soch le dobara... 🧐"
-              : naxerClicks === 4
-              ? "Main nahi maanoonga teri naa! 😠"
-              : "Last chance hai yaar!! 😤"}
-          </p>
-        )}
 
         <h1
           style={{
@@ -75,38 +233,26 @@ function App() {
             color: "white",
             textShadow: "2px 2px 10px rgba(0,0,0,0.3)",
             fontWeight: "bold",
-            marginBottom: "12px",
+            marginBottom: "35px",
             letterSpacing: "1px",
           }}
         >
           Tu Hash Mn Dkay
         </h1>
 
-        <p
-          style={{
-            fontSize: "18px",
-            color: "rgba(255,255,255,0.9)",
-            marginBottom: "35px",
-          }}
-        >
-          {showHeart
-            ? "Mujhe pata tha tu maan jayega! ❤️"
-            : "Haan ya nahi? Soch samajh ke jawab de! 😏"}
-        </p>
-
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "20px",
+            gap: "24px",
           }}
         >
           <button
-            onClick={() => setShowHeart(true)}
+            onClick={handleBale}
             style={{
               padding: "14px 36px",
-              fontSize: `${Math.max(16, 16 * baleScale * 0.5)}px`,
+              fontSize: "18px",
               fontWeight: "bold",
               background: "linear-gradient(135deg, #ff4d6d, #c9184a)",
               color: "white",
@@ -134,42 +280,14 @@ function App() {
                 border: "2px solid rgba(255,255,255,0.4)",
                 borderRadius: "50px",
                 cursor: "pointer",
-                transition: "all 0.3s ease",
                 backdropFilter: "blur(5px)",
-              }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget;
-                const x = Math.random() * 200 - 100;
-                const y = Math.random() * 100 - 50;
-                btn.style.transform = `translate(${x}px, ${y}px)`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translate(0,0)";
               }}
             >
               Naxer 🙅
             </button>
           )}
-
-          {showHeart && (
-            <div
-              style={{
-                fontSize: "40px",
-                animation: "bounce 0.6s infinite alternate",
-              }}
-            >
-              🎉💕🥳💕🎉
-            </div>
-          )}
         </div>
       </div>
-
-      <style>{`
-        @keyframes bounce {
-          from { transform: translateY(0px); }
-          to   { transform: translateY(-12px); }
-        }
-      `}</style>
     </div>
   );
 }
