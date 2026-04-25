@@ -19,7 +19,7 @@ export default defineConfig({
   },
   root: path.resolve(__dirname),
   build: {
-    outDir: path.resolve(process.cwd(), "dist"),
+    outDir: path.resolve(__dirname, "dist"),
     emptyOutDir: true,
   },
 });
